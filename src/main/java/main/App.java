@@ -1,13 +1,24 @@
 package main;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import commands.BaseCommand;
+import models.tickets.Ticket;
+import models.tickets.TicketFactory;
+import services.AppService;
+import services.MapperService;
+import services.TicketService;
+import services.UserService;
 
 /**
  * main.App represents the main application logic that processes input commands,
@@ -34,17 +45,33 @@ public class App {
         // however keep 'outputs' variable name to be used for writing
         List<ObjectNode> outputs = new ArrayList<>();
 
-        /*
-            TODO 1 :
-            Load initial user data and commands. we strongly recommend using jackson library.
-            you can use the reading from hw1 as a reference.
-            however you can use some of the more advanced features of
-            jackson library, available here: https://www.baeldung.com/jackson-annotations
-        */
+        // initialize services
+        ObjectMapper MAPPER = MapperService.getInstance();
+        UserService users = UserService.getInstance();
+        AppService commands = AppService.getInstance();
+        TicketService tickets = TicketService.getInstance();
 
-        // TODO 2: process commands.
+        try {
+            // load users
+            users.loadUsers(INPUT_USERS_FIELD);
 
-        // TODO 3: create objectnodes for output, add them to outputs list.
+            // load commands
+            commands.loadCommands(inputPath);
+
+            BaseCommand currentCommand = commands.getNextCommand();
+            while (currentCommand != null) {
+                ObjectNode output = currentCommand.execute();
+
+                if (output != null)
+                    outputs.add(output);
+                currentCommand = commands.getNextCommand();
+            }
+        }
+        catch (IOException e) {
+            System.out.println("error reading input file: " + e.getMessage());
+        }
+
+
 
         // DO NOT CHANGE THIS SECTION IN ANY WAY
         try {
