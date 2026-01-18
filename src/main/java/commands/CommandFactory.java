@@ -5,10 +5,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.time.LocalDate;
 
 public class CommandFactory {
-    public static Command createCommand(JsonNode commandNode) {
+    public static BaseCommand createCommand(JsonNode commandNode) {
         String commandName = commandNode.get("command").asText();
         String username = commandNode.get("username").asText();
-        LocalDate timestamp = LocalDate.parse(commandNode.get("timestamp").asText());
+        String timestamp = commandNode.get("timestamp").asText();
         JsonNode params = commandNode.get("params");
 
         return switch (commandName) {

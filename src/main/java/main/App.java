@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import commands.BaseCommand;
+import commands.CommandExecutor;
 import models.tickets.Ticket;
 import models.tickets.TicketFactory;
 import services.AppService;
@@ -48,7 +49,7 @@ public class App {
         // initialize services
         ObjectMapper MAPPER = MapperService.getInstance();
         UserService users = UserService.getInstance();
-        AppService commands = AppService.getInstance();
+        AppService app = AppService.getInstance();
         TicketService tickets = TicketService.getInstance();
 
         try {
@@ -56,15 +57,22 @@ public class App {
             users.loadUsers(INPUT_USERS_FIELD);
 
             // load commands
-            commands.loadCommands(inputPath);
+            app.loadCommands(inputPath);
 
-            BaseCommand currentCommand = commands.getNextCommand();
-            while (currentCommand != null) {
-                ObjectNode output = currentCommand.execute();
+            // execute commands
+            CommandExecutor executor = new CommandExecutor();
+            BaseCommand command = app.getNextCommand();
+
+            while (command != null) {
+                // update app state
+                app.update();
+
+                // execute command
+                ObjectNode output = executor.execute(command);
 
                 if (output != null)
                     outputs.add(output);
-                currentCommand = commands.getNextCommand();
+                command = app.getNextCommand();
             }
         }
         catch (IOException e) {

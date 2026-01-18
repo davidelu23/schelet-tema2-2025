@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import models.errors.UserDoesntExist;
+import services.UserService;
 
 import java.time.LocalDate;
 
@@ -25,22 +27,25 @@ import java.time.LocalDate;
 public abstract class BaseCommand implements Command{
     protected String command;
     protected String username;
-    @JsonIgnore
-    protected LocalDate timestamp;
+    protected String timestamp;
 
-    public BaseCommand(String command, String username, LocalDate timestamp) {
+    public BaseCommand(String command, String username, String timestamp) {
         this.command = command;
         this.username = username;
         this.timestamp = timestamp;
     }
 
-    @JsonProperty("timestamp")
-    public String getTimestamp() {
-        return timestamp.toString();
+    @Override
+    public void validate() throws Exception {
+        UserService users = UserService.getInstance();
+
+        // check is user exists
+        if (!users.userExists(username))
+            throw new UserDoesntExist("The user " + username + " does not exist.");
+
+        // check specific ticket properties
+        validateSpecific();
     }
 
-    @JsonProperty("timestamp")
-    public void setTimestamp(String timestamp) {
-        this.timestamp = LocalDate.parse(timestamp);
-    }
+    public abstract void validateSpecific() throws Exception;
 }

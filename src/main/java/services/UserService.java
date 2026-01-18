@@ -2,6 +2,7 @@ package services;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import models.enums.Role;
 import models.users.User;
 
 import java.io.File;
@@ -31,14 +32,19 @@ public class UserService {
         );
         for (User user : userList) {
             users.put(user.getUsername(), user);
+            TicketService.getInstance().addObserver(user);
         }
     }
 
-    public User getUser(String username) {
-        return users.get(username);
+    public Role getUserRole(String username) {
+        return users.get(username).getRole();
     }
 
     public boolean userExists(String username) {
         return users.containsKey(username);
+    }
+
+    public User getUser(String username) {
+        return users.get(username);
     }
 }

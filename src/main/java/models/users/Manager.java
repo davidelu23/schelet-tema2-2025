@@ -13,4 +13,14 @@ import java.util.List;
 public class Manager extends User {
     private String hireDate;
     private List<String> subordinates = new ArrayList<>();
+
+    @Override
+    public void onTicketAdded(int ticketId) {
+        this.getTicketsId().add(ticketId);
+    }
+
+    @Override
+    public void onTicketRemoved(int ticketId) {
+        // Can be overridden if needed
+    }
 }

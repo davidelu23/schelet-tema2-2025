@@ -18,4 +18,14 @@ public class Developer extends User {
     private Seniority seniority;
     private ExpertiseArea expertiseArea;
     private double performanceScore = 0.0;
+
+    @Override
+    public void onTicketAdded(int ticketId) {
+        // Can be overridden if needed
+    }
+
+    @Override
+    public void onTicketRemoved(int ticketId) {
+        // Can be overridden if needed
+    }
 }
