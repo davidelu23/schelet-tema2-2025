@@ -4,11 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.enums.Role;
 
-import java.util.Set;
+import java.util.List;
 
 public interface Command {
     ObjectNode execute();
     @JsonIgnore
-    Set<Role> getAllowedRoles();
+    List<Role> getAllowedRoles();
     void validate() throws Exception;
 }

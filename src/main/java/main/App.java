@@ -16,10 +16,7 @@ import commands.BaseCommand;
 import commands.CommandExecutor;
 import models.tickets.Ticket;
 import models.tickets.TicketFactory;
-import services.AppService;
-import services.MapperService;
-import services.TicketService;
-import services.UserService;
+import services.*;
 
 /**
  * main.App represents the main application logic that processes input commands,
@@ -46,6 +43,14 @@ public class App {
         // however keep 'outputs' variable name to be used for writing
         List<ObjectNode> outputs = new ArrayList<>();
 
+        // reset instances
+        MapperService.reset();
+        UserService.reset();
+        AppService.reset();
+        TicketService.reset();
+        TicketFactory.reset();
+        MilestoneService.reset();
+
         // initialize services
         ObjectMapper MAPPER = MapperService.getInstance();
         UserService users = UserService.getInstance();
@@ -64,11 +69,11 @@ public class App {
             BaseCommand command = app.getNextCommand();
 
             while (command != null) {
-                // update app state
-                app.update();
-
                 // execute command
                 ObjectNode output = executor.execute(command);
+
+                // update app state
+                app.update();
 
                 if (output != null)
                     outputs.add(output);

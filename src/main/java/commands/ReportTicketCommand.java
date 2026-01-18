@@ -9,8 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import models.enums.Phase;
 import models.enums.Role;
-import models.errors.IncorrectPhase;
-import models.errors.IncorrectTicketParam;
 import models.tickets.Ticket;
 import models.tickets.TicketFactory;
 import services.AppService;
@@ -18,6 +16,7 @@ import services.MapperService;
 import services.TicketService;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -25,9 +24,9 @@ import java.util.Set;
 public class ReportTicketCommand extends BaseCommand{
     @JsonIgnore
     protected JsonNode params;
-    ReportTicketCommand(String command, String username, String timestamp, JsonNode params) {
+    ReportTicketCommand(String command, String username, String timestamp, JsonNode specificFields) {
         super(command, username, timestamp);
-        this.params = params;
+        params = specificFields.get("params");
     }
 
     @Override
@@ -38,8 +37,8 @@ public class ReportTicketCommand extends BaseCommand{
     }
 
     @Override
-    public Set<Role> getAllowedRoles() {
-        return Set.of(Role.REPORTER);
+    public List<Role> getAllowedRoles() {
+        return List.of(Role.REPORTER);
     }
 
     @Override
@@ -48,10 +47,11 @@ public class ReportTicketCommand extends BaseCommand{
 
         // anonymous reports
         if (params.get("reportedBy").asText().isEmpty() && !params.get("type").asText().equals("BUG"))
-            throw new IncorrectTicketParam("Anonymous reports are only allowed for tickets of type BUG.");
+            throw new Exception("Anonymous reports are only allowed for tickets of type BUG.");
 
         // testing phase
-        if (!app.getCurrentPhase().equals(Phase.TestingPhase))
-            throw new IncorrectPhase("Tickets can only be reported during testing phases.");
+        if (!app.getCurrentPhase().equals(Phase.TestingPhase)) {
+            throw new Exception("Tickets can only be reported during testing phases.");
+        }
     }
 }

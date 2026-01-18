@@ -1,15 +1,13 @@
 package commands;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import models.errors.UserDoesntExist;
+import models.enums.Role;
 import services.UserService;
 
-import java.time.LocalDate;
+import java.util.stream.Collectors;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
@@ -41,7 +39,13 @@ public abstract class BaseCommand implements Command{
 
         // check is user exists
         if (!users.userExists(username))
-            throw new UserDoesntExist("The user " + username + " does not exist.");
+            throw new Exception("The user " + username + " does not exist.");
+
+        // check if user can use this command
+        if (!getAllowedRoles().contains(users.getUser(username).getRole()))
+            throw new Exception("The user does not have permission to execute this command: required role " + getAllowedRoles().stream()
+                    .map(Role::name)
+                    .collect(Collectors.joining(", ")) + "; user role " + users.getUser(username).getRole() + ".");
 
         // check specific ticket properties
         validateSpecific();

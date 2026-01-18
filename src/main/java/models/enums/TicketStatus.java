@@ -1,5 +1,5 @@
 package models.enums;
 
-public enum Status {
+public enum TicketStatus {
     OPEN, IN_PROGRESS, RESOLVED, CLOSED
 }

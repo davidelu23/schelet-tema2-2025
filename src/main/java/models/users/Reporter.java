@@ -11,13 +11,23 @@ import services.TicketService;
 @NoArgsConstructor
 public class Reporter extends User{
     @Override
-    public void onTicketAdded(int ticketId) {
+    public void onObjectAdded(int ticketId) {
         if (TicketService.getInstance().getTicket(ticketId).getReportedBy().equals(this.getUsername()))
-            this.getTicketsId().add(ticketId);
+            this.getTicketsIds().add(ticketId);
     }
 
     @Override
     public void onTicketRemoved(int ticketId) {
         // Can be overridden if needed
+    }
+
+    @Override
+    public void onMilestoneAdded(String milestoneName) {
+
+    }
+
+    @Override
+    public void onMilestoneRemoved(String milestoneName) {
+
     }
 }

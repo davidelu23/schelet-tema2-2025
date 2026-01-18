@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import models.enums.Role;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 @NoArgsConstructor
@@ -20,8 +21,8 @@ public class LostInvestorsCommand extends BaseCommand{
     }
 
     @Override
-    public Set<Role> getAllowedRoles() {
-        return Set.of(Role.REPORTER, Role.MANAGER, Role.DEVELOPER);
+    public List<Role> getAllowedRoles() {
+        return List.of(Role.MANAGER);
     }
 
     @Override

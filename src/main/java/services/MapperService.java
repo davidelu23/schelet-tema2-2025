@@ -13,4 +13,8 @@ public class MapperService {
 
         return instance;
     }
+
+    public static void reset() {
+        instance = null;
+    }
 }

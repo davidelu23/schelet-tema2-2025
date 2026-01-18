@@ -24,6 +24,11 @@ public class TicketService {
         return instance;
     }
 
+    public static void reset() {
+        instance = null;
+    }
+
+
     public void addTicket(Ticket ticket) {
         tickets.put(ticket.getId(), ticket);
         notifyTicketAdded(ticket.getId());
@@ -39,13 +44,9 @@ public class TicketService {
         }
     }
 
-    public void removeObserver(TicketObserver observer) {
-        observers.remove(observer);
-    }
-
-    private void notifyTicketAdded(int ticketId) {
+    public void notifyTicketAdded(int ticketId) {
         for (TicketObserver observer : observers) {
-            observer.onTicketAdded(ticketId);
+            observer.onObjectAdded(ticketId);
         }
     }
 }

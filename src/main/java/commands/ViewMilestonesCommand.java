@@ -4,42 +4,44 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import lombok.NoArgsConstructor;
 import models.enums.Role;
+import models.milestones.Milestone;
 import models.tickets.Ticket;
 import models.users.User;
 import services.MapperService;
-import services.TicketService;
 import services.UserService;
 
-import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-@NoArgsConstructor
-public class ViewTicketsCommand extends BaseCommand{
-    ViewTicketsCommand(String command, String username, String timestamp) {
+public class ViewMilestonesCommand extends BaseCommand {
+    ViewMilestonesCommand(String command, String username, String timestamp) {
         super(command, username, timestamp);
     }
 
     @Override
     public ObjectNode execute() {
         ObjectMapper MAPPER = MapperService.getInstance();
-        ArrayNode tickets = MAPPER.createArrayNode();
+        ArrayNode milestones = MAPPER.createArrayNode();
         ObjectNode result = MAPPER.valueToTree(this);
         User user = UserService.getInstance().getUser(username);
 
-        for (Ticket ticket : user.viewTickets()) {
-            tickets.add(MAPPER.convertValue(ticket, JsonNode.class));
+        List<Milestone> milestoneList = user.viewMilestones();
+        milestoneList.sort(Comparator
+                .comparing(Milestone::getCreatedAt).reversed()
+                .thenComparing(Milestone::getName));
+        for (Milestone milestone : milestoneList) {
+            milestones.add(MAPPER.convertValue(milestone, JsonNode.class));
         }
-        result.set("tickets", tickets);
+        result.set("milestones", milestones);
 
         return result;
     }
 
     @Override
     public List<Role> getAllowedRoles() {
-        return List.of(Role.REPORTER, Role.MANAGER, Role.DEVELOPER);
+        return List.of(Role.MANAGER, Role.DEVELOPER);
     }
 
     @Override

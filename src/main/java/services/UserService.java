@@ -24,6 +24,10 @@ public class UserService {
         return instance;
     }
 
+    public static void reset() {
+        instance = null;
+    }
+
     public void loadUsers(String filePath) throws IOException {
         ObjectMapper mapper = MapperService.getInstance();
         List<User> userList = mapper.readValue(
@@ -33,6 +37,7 @@ public class UserService {
         for (User user : userList) {
             users.put(user.getUsername(), user);
             TicketService.getInstance().addObserver(user);
+            MilestoneService.getInstance().addObserver(user);
         }
     }
 
