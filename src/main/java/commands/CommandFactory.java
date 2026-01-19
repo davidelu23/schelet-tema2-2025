@@ -17,6 +17,11 @@ public class CommandFactory {
             case "assignTicket" -> new AssignTicketCommand(commandName, username, timestamp, commandNode);
             case "undoAssignTicket" -> new UndoAssignTicketCommand(commandName, username, timestamp, commandNode);
             case "viewAssignedTickets" -> new ViewAssignedTicketsCommand(commandName, username, timestamp);
+            case "addComment" -> new AddCommentCommand(commandName, username, timestamp, commandNode);
+            case "undoAddComment" -> new UndoAddCommentCommand(commandName, username, timestamp, commandNode);
+            case "changeStatus" -> new ChangeStatusCommand(commandName, username, timestamp, commandNode);
+            case "undoChangeStatus" -> new UndoChangeStatusCommand(commandName, username, timestamp, commandNode);
+            case "viewTicketHistory" -> new ViewTicketHistoryCommand(commandName, username, timestamp);
             default -> null;
         };
     }

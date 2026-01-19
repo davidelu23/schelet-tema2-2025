@@ -34,6 +34,7 @@ public abstract class TicketFactory {
         ticket.setSolvedAt("");
         ticket.setComments(mapper.createArrayNode());
         ticket.setAssignedMilestone(null);
+        ticket.setHistory(mapper.createArrayNode());
 
         // check anonymous ticket
         if (ticket.getReportedBy().isEmpty() && type.equals("BUG"))

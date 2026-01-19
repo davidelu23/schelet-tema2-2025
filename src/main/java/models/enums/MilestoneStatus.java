@@ -1,5 +1,5 @@
 package models.enums;
 
 public enum MilestoneStatus {
-    ACTIVE, BLOCKED, CLOSED
+    ACTIVE, BLOCKED, CLOSED, COMPLETED
 }

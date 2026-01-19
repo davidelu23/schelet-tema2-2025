@@ -25,13 +25,14 @@ public class ViewAssignedTicketsCommand extends BaseCommand {
         ObjectNode result = MAPPER.valueToTree(this);
         User user = UserService.getInstance().getUser(username);
 
+
         List<Ticket> ticketList = user.viewAllTickets();
         ticketList.sort(Comparator
                 .comparing(Ticket::getBusinessPriority).reversed()
                 .thenComparing(Ticket::getCreatedAt)
                 .thenComparing(Ticket::getId));
         for (Ticket ticket : ticketList) {
-            ObjectNode node = MAPPER.createObjectNode();
+            ObjectNode node = MapperService.getInstance().createObjectNode();
 
             node.put("id", ticket.getId());
             node.put("type", ticket.getType());
@@ -41,7 +42,7 @@ public class ViewAssignedTicketsCommand extends BaseCommand {
             node.put("createdAt", ticket.getCreatedAt());
             node.put("assignedAt", ticket.getAssignedAt());
             node.put("reportedBy", ticket.getReportedBy());
-            node.set("comments", ticket.getComments());
+            node.set("comments", ticket.getComments().deepCopy());
             tickets.add(node);
         }
         result.set("assignedTickets", tickets);

@@ -91,6 +91,7 @@ public class MilestoneService {
         Milestone milestone = milestones.get(milestoneName);
 
         user.getTicketsIds().remove(ticketId);
+        user.getPastTicketsIds().add(ticketId);
         ticket.setAssignedTo("");
         ticket.setAssignedAt("");
         ticket.setStatus(TicketStatus.OPEN);

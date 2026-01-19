@@ -35,10 +35,18 @@ public class Milestone {
     private long daysUntilDue;
     private List<Integer> openTickets;
     private List<Integer> closedTickets;
+    @JsonIgnore
     private double completionPercentage;
     private List<Repartition> repartition;
     @JsonIgnore
     private long daysPassed;
+    @JsonIgnore
+    private String completedAt;
+
+    @JsonProperty("completionPercentage")
+    public double getCompletionPercentage() {
+        return (int)(completionPercentage * 100) / 100.0;
+    }
 
     @JsonProperty("isBlocked")
     public boolean getIsBlocked() {
@@ -55,23 +63,49 @@ public class Milestone {
             updateTicketsPriority(daysPassed);
     }
 
+    public void closeTicket(int ticketId) {
+        openTickets.remove(Integer.valueOf(ticketId));
+        if (!closedTickets.contains(ticketId)) {
+            closedTickets.add(ticketId);
+        }
+    }
+
+    public void openTicket(int ticketId) {
+        closedTickets.remove(Integer.valueOf(ticketId));
+        if (!openTickets.contains(ticketId)) {
+            openTickets.add(ticketId);
+        }
+    }
+
     @JsonProperty("daysUntilDue")
     public long getDaysUntilDue() {
+        updateDaysUntilDue();
         return Math.max(0, daysUntilDue);
     }
 
     @JsonProperty("overdueBy")
     public long getOverdueBy() {
+        updateDaysUntilDue();
         return Math.abs(Math.min(0, daysUntilDue));
     }
 
     private void updateDaysUntilDue() {
         LocalDate currentDate = AppService.getInstance().getCurrentDate();
-        daysUntilDue = ChronoUnit.DAYS.between(currentDate, LocalDate.parse(dueDate));
-        if (daysUntilDue >= 0)
-            daysUntilDue++;
-        else
-            daysUntilDue--;
+        LocalDate due;
+        long rawDiff;
+        if (completedAt != null) {
+            due = LocalDate.parse(completedAt);
+            rawDiff = ChronoUnit.DAYS.between(due, LocalDate.parse(dueDate));
+        } else {
+            due = LocalDate.parse(dueDate);
+            rawDiff = ChronoUnit.DAYS.between(currentDate, due);
+        }
+
+        if (rawDiff >= 0) {
+            daysUntilDue = rawDiff + 1;
+        } else {
+            daysUntilDue = rawDiff - 1;
+        }
     }
 
     private void updateTicketsPriority(long daysPassed) {

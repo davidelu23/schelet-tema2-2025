@@ -3,6 +3,8 @@ package models.users;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import models.milestones.Milestone;
@@ -35,6 +37,8 @@ public abstract class User implements TicketObserver, MilestoneObserver {
     @JsonIgnore
     private final Set<Integer> ticketsIds = new LinkedHashSet<>();
     @JsonIgnore
+    private final Set<Integer> pastTicketsIds = new LinkedHashSet<>();
+    @JsonIgnore
     private final Set<String> milestonesNames = new LinkedHashSet<>();
 
     public List<Ticket> viewTickets() {
@@ -46,6 +50,15 @@ public abstract class User implements TicketObserver, MilestoneObserver {
 
     public List<Ticket> viewAllTickets() {
         List<Ticket> tickets = new LinkedList<>();
+        for (int ticketId : ticketsIds)
+            tickets.add(TicketService.getInstance().getTicket(ticketId));
+        return tickets;
+    }
+
+    public List<Ticket> viewAssignedTickets() {
+        List<Ticket> tickets = new LinkedList<>();
+        for (int ticketId : pastTicketsIds)
+            tickets.add(TicketService.getInstance().getTicket(ticketId));
         for (int ticketId : ticketsIds)
             tickets.add(TicketService.getInstance().getTicket(ticketId));
         return tickets;

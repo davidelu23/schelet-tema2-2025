@@ -2,6 +2,7 @@ package models.tickets;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import lombok.Getter;
@@ -9,7 +10,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import models.enums.ExpertiseArea;
 import models.enums.Priority;
+import models.enums.Seniority;
 import models.enums.TicketStatus;
+
+import java.util.List;
 
 @Setter
 @Getter
@@ -22,7 +26,7 @@ public abstract class Ticket {
     private String title;
     private Priority businessPriority;
     private TicketStatus status;
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private ExpertiseArea expertiseArea;
     @JsonIgnore
     private String description;
@@ -34,4 +38,9 @@ public abstract class Ticket {
     private String assignedTo;
     private String reportedBy;
     private ArrayNode comments;
+    @JsonIgnore
+    private ArrayNode history;
+
+    @JsonIgnore
+    public abstract List<Seniority> getRequiredSeniorities();
 }

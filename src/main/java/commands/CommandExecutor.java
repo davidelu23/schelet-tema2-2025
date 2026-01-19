@@ -1,17 +1,18 @@
 package commands;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import services.MapperService;
-import services.UserService;
 
 public class CommandExecutor {
-    private final UserService userService = UserService.getInstance();
 
     public ObjectNode execute(Command command) {
         try {
             command.validate();
+            return command.execute();
+        }
+        catch (NullPointerException e) {
+            return null;
         }
         catch (Exception e) {
             ObjectMapper MAPPER = MapperService.getInstance();
@@ -19,6 +20,5 @@ public class CommandExecutor {
             result.set("error", MAPPER.valueToTree(e.getMessage()));
             return result;
         }
-        return command.execute();
     }
 }

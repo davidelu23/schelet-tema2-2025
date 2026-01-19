@@ -1,9 +1,11 @@
 package models.milestones;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.enums.MilestoneStatus;
 import models.enums.TicketStatus;
 import models.tickets.Ticket;
+import services.MapperService;
 import services.MilestoneService;
 import services.TicketService;
 
@@ -47,6 +49,13 @@ public abstract class MilestoneFactory {
 
                 // update ticket assigned milestone
                 TicketService.getInstance().getTicket(node.asInt()).setAssignedMilestone(milestone.getName());
+
+                ObjectNode history = MapperService.getInstance().createObjectNode();
+                history.put("milestone", milestone.getName());
+                history.put("by", username);
+                history.put("timestamp", timestamp);
+                history.put("action", "ADDED_TO_MILESTONE");
+                TicketService.getInstance().getTicket(node.asInt()).getHistory().add(history);
             }
         }
         milestone.setTickets(tickets);
@@ -54,7 +63,7 @@ public abstract class MilestoneFactory {
         // milestone fields not present in json
         milestone.setStatus(MilestoneStatus.ACTIVE);
         milestone.setIsBlocked(false);
-        milestone.setOpenTickets(List.copyOf(milestone.getTickets()));
+        milestone.setOpenTickets(new ArrayList<>(tickets));
         milestone.setClosedTickets(new ArrayList<>());
         milestone.setCompletionPercentage(0.0);
         milestone.setRepartition(new ArrayList<>());
