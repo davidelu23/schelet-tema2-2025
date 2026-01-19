@@ -1,20 +1,17 @@
 package models.tickets;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import models.enums.BusinessValue;
 import models.enums.Priority;
 import models.enums.Seniority;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public class UI_Feedback extends Ticket {
+public class UiFeedback extends Ticket {
     @JsonIgnore
     private String uiElementId;
     @JsonIgnore
@@ -33,5 +30,15 @@ public class UI_Feedback extends Ticket {
         if (this.getBusinessPriority() == Priority.HIGH)
             return List.of(Seniority.MID, Seniority.SENIOR);
         return List.of(Seniority.JUNIOR, Seniority.MID, Seniority.SENIOR);
+    }
+
+    @Override
+    public double calculateCustomerImpact() {
+        int bv = this.getBusinessValue().getValue();
+        int score = this.getUsabilityScore();
+
+        double rawImpact = bv * score;
+
+        return rawImpact;
     }
 }

@@ -12,13 +12,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MilestoneService {
+/**
+ * Service for managing milestones.
+ */
+public final class MilestoneService {
     private static MilestoneService instance;
     private final Map<String, Milestone> milestones = new HashMap<>();
     private final List<MilestoneObserver> observers = new ArrayList<>();
 
-    private MilestoneService() {}
+    private MilestoneService() { }
 
+    /**
+     * Returns the singleton instance of the MilestoneService.
+     * @return The singleton instance.
+     */
     public static MilestoneService getInstance() {
         if (instance == null) {
             instance = new MilestoneService();
@@ -26,38 +33,67 @@ public class MilestoneService {
         return instance;
     }
 
+    /**
+     * Resets the singleton instance.
+     */
     public static void reset() {
         instance = null;
     }
 
-    public void addMilestone(Milestone milestone) {
+    /**
+     * Adds a milestone to the service.
+     * @param milestone The milestone to add.
+     */
+    public void addMilestone(final Milestone milestone) {
         milestones.put(milestone.getName(), milestone);
         notifyMilestoneAdded(milestone.getName());
     }
 
-    public Milestone getMilestone(String name) {
+    /**
+     * Returns a milestone by its name.
+     * @param name The name of the milestone.
+     * @return The milestone.
+     */
+    public Milestone getMilestone(final String name) {
         return milestones.get(name);
     }
 
-    public void addObserver(MilestoneObserver observer) {
+    /**
+     * Adds an observer to the service.
+     * @param observer The observer to add.
+     */
+    public void addObserver(final MilestoneObserver observer) {
         if (!observers.contains(observer)) {
             observers.add(observer);
         }
     }
 
-    public void notifyMilestoneAdded(String milestoneName) {
+    /**
+     * Notifies observers that a milestone has been added.
+     * @param milestoneName The name of the added milestone.
+     */
+    public void notifyMilestoneAdded(final String milestoneName) {
         for (MilestoneObserver observer : observers) {
             observer.onMilestoneAdded(milestoneName);
         }
     }
 
-    public void updateTime(long daysPassed) {
+    /**
+     * Updates the time for all milestones.
+     * @param daysPassed The number of days that have passed.
+     */
+    public void updateTime(final long daysPassed) {
         for (Milestone milestone : milestones.values()) {
             milestone.updateTime(daysPassed);
         }
     }
 
-    public void assignTicket(int ticketId, String username) {
+    /**
+     * Assigns a ticket to a user within a milestone.
+     * @param ticketId The ID of the ticket to assign.
+     * @param username The username of the user to assign the ticket to.
+     */
+    public void assignTicket(final int ticketId, final String username) {
         Ticket ticket = TicketService.getInstance().getTicket(ticketId);
         User user = UserService.getInstance().getUser(username);
         String milestoneName = ticket.getAssignedMilestone();
@@ -80,7 +116,12 @@ public class MilestoneService {
         }
     }
 
-    public void unassignTicket(int ticketId, String username) {
+    /**
+     * Unassigns a ticket from a user.
+     * @param ticketId The ID of the ticket to unassign.
+     * @param username The username of the user to unassign the ticket from.
+     */
+    public void unassignTicket(final int ticketId, final String username) {
         Ticket ticket = TicketService.getInstance().getTicket(ticketId);
         User user = UserService.getInstance().getUser(username);
         String milestoneName = ticket.getAssignedMilestone();
@@ -90,7 +131,7 @@ public class MilestoneService {
         }
         Milestone milestone = milestones.get(milestoneName);
 
-        user.getTicketsIds().remove(ticketId);
+        user.getTicketsIds().remove(Integer.valueOf(ticketId));
         user.getPastTicketsIds().add(ticketId);
         ticket.setAssignedTo("");
         ticket.setAssignedAt("");

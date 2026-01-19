@@ -7,17 +7,30 @@ import models.enums.Role;
 import models.tickets.Ticket;
 import models.users.User;
 import services.MapperService;
-import services.TicketService;
 import services.UserService;
 
 import java.util.List;
 
-public class ViewTicketHistoryCommand extends BaseCommand {
+/**
+ * Command to view the history of tickets assigned to the current user.
+ */
+public final class ViewTicketHistoryCommand extends BaseCommand {
 
-    public ViewTicketHistoryCommand(String command, String username, String timestamp) {
+    /**
+     * Constructs a new ViewTicketHistoryCommand.
+     * @param command The command name.
+     * @param username The username of the user executing the command.
+     * @param timestamp The timestamp of the command.
+     */
+    public ViewTicketHistoryCommand(final String command, final String username,
+                                    final String timestamp) {
         super(command, username, timestamp);
     }
 
+    /**
+     * Executes the command to view ticket history.
+     * @return An ObjectNode containing the ticket history.
+     */
     @Override
     public ObjectNode execute() {
         User user = UserService.getInstance().getUser(username);
@@ -33,8 +46,9 @@ public class ViewTicketHistoryCommand extends BaseCommand {
             ticketNode.put("title", ticket.getTitle());
             ticketNode.put("status", ticket.getStatus().toString());
             ArrayNode actions = MapperService.getInstance().createArrayNode();
-            for (JsonNode action : ticket.getHistory())
+            for (JsonNode action : ticket.getHistory()) {
                 actions.add(action);
+            }
             ticketNode.set("actions", actions);
             ticketNode.set("comments", ticket.getComments().deepCopy());
             ticketHistory.add(ticketNode);
@@ -44,6 +58,10 @@ public class ViewTicketHistoryCommand extends BaseCommand {
         return result;
     }
 
+    /**
+     * Returns the allowed roles for this command.
+     * @return A list of allowed roles.
+     */
     @Override
     public List<Role> getAllowedRoles() {
         return List.of(Role.DEVELOPER, Role.MANAGER);

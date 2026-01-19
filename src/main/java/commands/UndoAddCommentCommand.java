@@ -9,14 +9,29 @@ import services.TicketService;
 
 import java.util.List;
 
-public class UndoAddCommentCommand extends BaseCommand {
-    int ticketId;
+/**
+ * Command to undo adding a comment to a ticket.
+ */
+public final class UndoAddCommentCommand extends BaseCommand {
+    private final int ticketId;
 
-    UndoAddCommentCommand(String command, String username, String timestamp, JsonNode specificFields) {
+    /**
+     * Constructs a new UndoAddCommentCommand.
+     * @param command The command name.
+     * @param username The username of the user executing the command.
+     * @param timestamp The timestamp of the command.
+     * @param specificFields The specific fields for this command.
+     */
+    UndoAddCommentCommand(final String command, final String username, final String timestamp,
+                          final JsonNode specificFields) {
         super(command, username, timestamp);
         ticketId = specificFields.get("ticketID").asInt();
     }
 
+    /**
+     * Executes the command to undo adding a comment.
+     * @return null.
+     */
     @Override
     public ObjectNode execute() {
         Ticket ticket = TicketService.getInstance().getTicket(ticketId);
@@ -38,11 +53,19 @@ public class UndoAddCommentCommand extends BaseCommand {
         return null;
     }
 
+    /**
+     * Returns the allowed roles for this command.
+     * @return A list of allowed roles.
+     */
     @Override
     public List<Role> getAllowedRoles() {
         return List.of(Role.DEVELOPER, Role.REPORTER);
     }
 
+    /**
+     * Validates the specific parameters for this command.
+     * @throws Exception if the validation fails.
+     */
     @Override
     public void validateSpecific() throws Exception {
         Ticket ticket = TicketService.getInstance().getTicket(ticketId);

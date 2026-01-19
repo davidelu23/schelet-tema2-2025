@@ -1,6 +1,5 @@
 package commands;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -13,16 +12,30 @@ import services.UserService;
 import java.util.Comparator;
 import java.util.List;
 
-public class ViewAssignedTicketsCommand extends BaseCommand {
-    ViewAssignedTicketsCommand(String command, String username, String timestamp) {
+/**
+ * Command to view assigned tickets.
+ */
+public final class ViewAssignedTicketsCommand extends BaseCommand {
+    /**
+     * Constructs a new ViewAssignedTicketsCommand.
+     * @param command The command name.
+     * @param username The username of the user executing the command.
+     * @param timestamp The timestamp of the command.
+     */
+    ViewAssignedTicketsCommand(final String command, final String username,
+                               final String timestamp) {
         super(command, username, timestamp);
     }
 
+    /**
+     * Executes the command to view assigned tickets.
+     * @return An ObjectNode containing the assigned tickets.
+     */
     @Override
     public ObjectNode execute() {
-        ObjectMapper MAPPER = MapperService.getInstance();
-        ArrayNode tickets = MAPPER.createArrayNode();
-        ObjectNode result = MAPPER.valueToTree(this);
+        ObjectMapper mapper = MapperService.getInstance();
+        ArrayNode tickets = mapper.createArrayNode();
+        ObjectNode result = mapper.valueToTree(this);
         User user = UserService.getInstance().getUser(username);
 
 
@@ -50,6 +63,10 @@ public class ViewAssignedTicketsCommand extends BaseCommand {
         return result;
     }
 
+    /**
+     * Returns the allowed roles for this command.
+     * @return A list of allowed roles.
+     */
     @Override
     public List<Role> getAllowedRoles() {
         return List.of(Role.DEVELOPER);

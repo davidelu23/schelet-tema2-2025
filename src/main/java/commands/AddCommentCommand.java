@@ -13,22 +13,38 @@ import services.UserService;
 
 import java.util.List;
 
-public class AddCommentCommand extends BaseCommand {
-    int ticketId;
-    String comment;
+/**
+ * Command to add a comment to a ticket.
+ */
+public final class AddCommentCommand extends BaseCommand {
+    private final int ticketId;
+    private final String comment;
+    private static final int MIN_COMMENT_LENGTH = 10;
 
-    AddCommentCommand(String command, String username, String timestamp, JsonNode specificFields) {
+    /**
+     * Constructs a new AddCommentCommand.
+     * @param command The command name.
+     * @param username The username of the user executing the command.
+     * @param timestamp The timestamp of the command.
+     * @param specificFields The specific fields for this command.
+     */
+    AddCommentCommand(final String command, final String username, final String timestamp,
+                      final JsonNode specificFields) {
         super(command, username, timestamp);
         ticketId = specificFields.get("ticketID").asInt();
         comment = specificFields.get("comment").asText();
     }
 
+    /**
+     * Executes the command to add a comment.
+     * @return null.
+     */
     @Override
     public ObjectNode execute() {
-        ObjectMapper MAPPER = MapperService.getInstance();
+        ObjectMapper mapper = MapperService.getInstance();
         Ticket ticket = TicketService.getInstance().getTicket(ticketId);
 
-        ObjectNode commentNode = MAPPER.createObjectNode();
+        ObjectNode commentNode = mapper.createObjectNode();
         commentNode.put("author", username);
         commentNode.put("content", comment);
         commentNode.put("createdAt", timestamp);
@@ -38,11 +54,19 @@ public class AddCommentCommand extends BaseCommand {
         return null;
     }
 
+    /**
+     * Returns the allowed roles for this command.
+     * @return A list of allowed roles.
+     */
     @Override
     public List<Role> getAllowedRoles() {
         return List.of(Role.DEVELOPER, Role.REPORTER);
     }
 
+    /**
+     * Validates the specific parameters for this command.
+     * @throws Exception if the validation fails.
+     */
     @Override
     public void validateSpecific() throws Exception {
         Ticket ticket = TicketService.getInstance().getTicket(ticketId);
@@ -54,14 +78,15 @@ public class AddCommentCommand extends BaseCommand {
         }
 
         // 2. Comment must be at least 10 characters long
-        if (comment.length() < 10) {
+        if (comment.length() < MIN_COMMENT_LENGTH) {
             throw new Exception("Comment must be at least 10 characters long.");
         }
 
         // 3. Developer-specific validation: ticket must be assigned to them
         if (user.getRole() == Role.DEVELOPER) {
             if (!ticket.getAssignedTo().equals(username)) {
-                throw new Exception("Ticket " + ticketId + " is not assigned to the developer " + username + ".");
+                throw new Exception("Ticket " + ticketId
+                        + " is not assigned to the developer " + username + ".");
             }
         }
 
@@ -74,7 +99,8 @@ public class AddCommentCommand extends BaseCommand {
 
             // Reporters can only comment on tickets they reported
             if (!ticket.getReportedBy().equals(username)) {
-                throw new Exception("Reporter " + username + " cannot comment on ticket " + ticketId + ".");
+                throw new Exception("Reporter " + username
+                        + " cannot comment on ticket " + ticketId + ".");
             }
         }
     }

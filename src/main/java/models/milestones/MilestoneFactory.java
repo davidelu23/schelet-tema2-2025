@@ -3,19 +3,26 @@ package models.milestones;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.enums.MilestoneStatus;
-import models.enums.TicketStatus;
-import models.tickets.Ticket;
 import services.MapperService;
 import services.MilestoneService;
 import services.TicketService;
 
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A factory for creating milestones.
+ */
 public abstract class MilestoneFactory {
-    public static Milestone createMilestone(String username, String timestamp, JsonNode params) {
+    /**
+     * Creates a milestone from JSON data.
+     * @param username The username of the user creating the milestone.
+     * @param timestamp The timestamp of the creation.
+     * @param params The JSON data for the milestone.
+     * @return The created milestone.
+     */
+    public static Milestone createMilestone(final String username, final String timestamp,
+                                            final JsonNode params) {
         Milestone milestone = new Milestone();
 
         milestone.setName(params.get("name").asText());
@@ -48,7 +55,8 @@ public abstract class MilestoneFactory {
                 tickets.add(node.asInt());
 
                 // update ticket assigned milestone
-                TicketService.getInstance().getTicket(node.asInt()).setAssignedMilestone(milestone.getName());
+                TicketService.getInstance().getTicket(node.asInt())
+                        .setAssignedMilestone(milestone.getName());
 
                 ObjectNode history = MapperService.getInstance().createObjectNode();
                 history.put("milestone", milestone.getName());
@@ -67,8 +75,9 @@ public abstract class MilestoneFactory {
         milestone.setClosedTickets(new ArrayList<>());
         milestone.setCompletionPercentage(0.0);
         milestone.setRepartition(new ArrayList<>());
-        for (String dev : milestone.getAssignedDevs())
+        for (String dev : milestone.getAssignedDevs()) {
             milestone.getRepartition().add(new Repartition(dev));
+        }
         milestone.setDaysPassed(0);
 
         return milestone;

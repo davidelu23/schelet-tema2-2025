@@ -9,14 +9,29 @@ import services.TicketService;
 
 import java.util.List;
 
-public class UndoAssignTicketCommand extends BaseCommand {
-    int ticketId;
+/**
+ * Command to undo the assignment of a ticket.
+ */
+public final class UndoAssignTicketCommand extends BaseCommand {
+    private final int ticketId;
 
-    UndoAssignTicketCommand(String command, String username, String timestamp, JsonNode specificFields) {
+    /**
+     * Constructs a new UndoAssignTicketCommand.
+     * @param command The command name.
+     * @param username The username of the user executing the command.
+     * @param timestamp The timestamp of the command.
+     * @param specificFields The specific fields for this command.
+     */
+    UndoAssignTicketCommand(final String command, final String username, final String timestamp,
+                            final JsonNode specificFields) {
         super(command, username, timestamp);
         ticketId = specificFields.get("ticketID").asInt();
     }
 
+    /**
+     * Executes the command to undo the assignment of a ticket.
+     * @return null.
+     */
     @Override
     public ObjectNode execute() {
         MilestoneService.getInstance().unassignTicket(ticketId, username);
@@ -30,6 +45,10 @@ public class UndoAssignTicketCommand extends BaseCommand {
         return null;
     }
 
+    /**
+     * Returns the allowed roles for this command.
+     * @return A list of allowed roles.
+     */
     @Override
     public List<Role> getAllowedRoles() {
         return List.of(Role.DEVELOPER);

@@ -15,6 +15,9 @@ import models.enums.TicketStatus;
 
 import java.util.List;
 
+/**
+ * Abstract base class for all tickets.
+ */
 @Setter
 @Getter
 @JsonInclude
@@ -41,6 +44,17 @@ public abstract class Ticket {
     @JsonIgnore
     private ArrayNode history;
 
+    /**
+     * Returns the required seniorities for this ticket.
+     * @return A list of required seniorities.
+     */
     @JsonIgnore
     public abstract List<Seniority> getRequiredSeniorities();
+
+    /**
+     * Returns the required expertise areas for this ticket.
+     * @return A list of required expertise areas.
+     */
+    @JsonIgnore
+    public abstract double calculateCustomerImpact();
 }

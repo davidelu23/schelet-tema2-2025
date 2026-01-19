@@ -11,12 +11,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class UserService {
+/**
+ * Service for user-related operations.
+ */
+public final class UserService {
     private static UserService instance;
     private final Map<String, User> users = new HashMap<>();
 
-    private UserService() {}
+    private UserService() { }
 
+    /**
+     * Returns the singleton instance of the UserService.
+     * @return The singleton instance.
+     */
     public static UserService getInstance() {
         if (instance == null) {
             instance = new UserService();
@@ -24,15 +31,23 @@ public class UserService {
         return instance;
     }
 
+    /**
+     * Resets the singleton instance.
+     */
     public static void reset() {
         instance = null;
     }
 
-    public void loadUsers(String filePath) throws IOException {
+    /**
+     * Loads users from a JSON file.
+     * @param filePath The path to the JSON file.
+     * @throws IOException If the file cannot be read.
+     */
+    public void loadUsers(final String filePath) throws IOException {
         ObjectMapper mapper = MapperService.getInstance();
         List<User> userList = mapper.readValue(
                 new File(filePath),
-                new TypeReference<>() {}
+                new TypeReference<>() { }
         );
         for (User user : userList) {
             users.put(user.getUsername(), user);
@@ -41,15 +56,30 @@ public class UserService {
         }
     }
 
-    public Role getUserRole(String username) {
+    /**
+     * Returns the role of a user.
+     * @param username The username.
+     * @return The user's role.
+     */
+    public Role getUserRole(final String username) {
         return users.get(username).getRole();
     }
 
-    public boolean userExists(String username) {
+    /**
+     * Checks if a user exists.
+     * @param username The username.
+     * @return True if the user exists, false otherwise.
+     */
+    public boolean userExists(final String username) {
         return users.containsKey(username);
     }
 
-    public User getUser(String username) {
+    /**
+     * Returns a user by username.
+     * @param username The username.
+     * @return The user object.
+     */
+    public User getUser(final String username) {
         return users.get(username);
     }
 }

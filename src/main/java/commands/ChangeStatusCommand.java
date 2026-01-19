@@ -7,18 +7,28 @@ import models.enums.Role;
 import models.enums.TicketStatus;
 import models.milestones.Milestone;
 import models.tickets.Ticket;
-import models.users.User;
 import services.MapperService;
 import services.MilestoneService;
 import services.TicketService;
-import services.UserService;
 
 import java.util.List;
 
-public class ChangeStatusCommand extends BaseCommand {
-    private int ticketId;
+/**
+ * Command to change the status of a ticket.
+ */
+public final class ChangeStatusCommand extends BaseCommand {
+    private final int ticketId;
 
-    public ChangeStatusCommand(String command, String username, String timestamp, JsonNode specificFields) {
+    /**
+     * Constructs a new ChangeStatusCommand.
+     *
+     * @param command        The command name.
+     * @param username       The username of the user executing the command.
+     * @param timestamp      The timestamp of the command.
+     * @param specificFields The specific fields for this command.
+     */
+    public ChangeStatusCommand(final String command, final String username, final String timestamp,
+                               final JsonNode specificFields) {
         super(command, username, timestamp);
         this.ticketId = specificFields.get("ticketID").asInt();
     }
@@ -44,15 +54,17 @@ public class ChangeStatusCommand extends BaseCommand {
         return null;
     }
 
-    private TicketStatus getNextStatus(TicketStatus currentStatus, Ticket ticket) {
+    private TicketStatus getNextStatus(final TicketStatus currentStatus, final Ticket ticket) {
         return switch (currentStatus) {
             case OPEN -> TicketStatus.IN_PROGRESS;
             case IN_PROGRESS -> TicketStatus.RESOLVED;
             case RESOLVED -> {
                 ticket.setSolvedAt(timestamp);
-                Milestone milestone = MilestoneService.getInstance().getMilestone(ticket.getAssignedMilestone());
+                Milestone milestone = MilestoneService.getInstance()
+                        .getMilestone(ticket.getAssignedMilestone());
                 milestone.closeTicket(ticketId);
-                milestone.setCompletionPercentage(milestone.getClosedTickets().size() * 1.00 / milestone.getTickets().size());
+                milestone.setCompletionPercentage(milestone.getClosedTickets().size() * 1.00
+                        / milestone.getTickets().size());
                 if (milestone.getCompletionPercentage() == 1.0) {
                     milestone.setStatus(MilestoneStatus.COMPLETED);
                     milestone.setCompletedAt(timestamp);
@@ -77,7 +89,8 @@ public class ChangeStatusCommand extends BaseCommand {
         }
 
         if (!username.equals(ticket.getAssignedTo())) {
-            throw new Exception("Ticket " + ticketId + " is not assigned to developer " + username + ".");
+            throw new Exception("Ticket " + ticketId
+                    + " is not assigned to developer " + username + ".");
         }
     }
 }

@@ -17,10 +17,13 @@ import java.time.temporal.ChronoUnit;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Represents a milestone.
+ */
 @Getter
 @Setter
 @NoArgsConstructor
-public class Milestone {
+public final class Milestone {
     private String name;
     private List<String> blockingFor;
     private String dueDate;
@@ -42,47 +45,82 @@ public class Milestone {
     private long daysPassed;
     @JsonIgnore
     private String completedAt;
+    private static final int ONE_HUNDRED = 100;
+    private static final int THREE = 3;
 
+    /**
+     * Returns the completion percentage of the milestone.
+     * @return The completion percentage.
+     */
     @JsonProperty("completionPercentage")
     public double getCompletionPercentage() {
-        return (int)(completionPercentage * 100) / 100.0;
+        return (int) (completionPercentage * ONE_HUNDRED) / (double) ONE_HUNDRED;
     }
 
+    /**
+     * Returns whether the milestone is blocked.
+     * @return True if the milestone is blocked, false otherwise.
+     */
     @JsonProperty("isBlocked")
     public boolean getIsBlocked() {
         return isBlocked;
     }
 
-    public void setIsBlocked(boolean isBlocked) {
+    /**
+     * Sets whether the milestone is blocked.
+     * @param isBlocked True if the milestone is blocked, false otherwise.
+     */
+    public void setIsBlocked(final boolean isBlocked) {
         this.isBlocked = isBlocked;
     }
 
-    public void updateTime(long daysPassed) {
+    /**
+     * Updates the time for the milestone.
+     * @param newDaysPassed The number of days that have passed.
+     */
+    public void updateTime(final long newDaysPassed) {
         updateDaysUntilDue();
-        if (!this.isBlocked)
-            updateTicketsPriority(daysPassed);
+        if (!this.isBlocked) {
+            updateTicketsPriority(newDaysPassed);
+        }
     }
 
-    public void closeTicket(int ticketId) {
+    /**
+     * Closes a ticket in the milestone.
+     * @param ticketId The ID of the ticket to close.
+     */
+    public void closeTicket(final int ticketId) {
         openTickets.remove(Integer.valueOf(ticketId));
         if (!closedTickets.contains(ticketId)) {
             closedTickets.add(ticketId);
         }
     }
 
-    public void openTicket(int ticketId) {
+    /**
+     * Opens a ticket in the milestone.
+     * @param ticketId The ID of the ticket to open.
+     */
+    public void openTicket(final int ticketId) {
         closedTickets.remove(Integer.valueOf(ticketId));
         if (!openTickets.contains(ticketId)) {
             openTickets.add(ticketId);
         }
     }
 
+    /**
+     * Returns the number of days until the milestone is due.
+     * @return The number of days until the milestone is due.
+     */
     @JsonProperty("daysUntilDue")
     public long getDaysUntilDue() {
         updateDaysUntilDue();
         return Math.max(0, daysUntilDue);
     }
 
+    /**
+     * Returns the number of days the milestone is overdue by.
+     * @return The number of days the milestone is overdue by.
+     */
     @JsonProperty("overdueBy")
     public long getOverdueBy() {
         updateDaysUntilDue();
@@ -108,28 +146,32 @@ public class Milestone {
         }
     }
 
-    private void updateTicketsPriority(long daysPassed) {
+    private void updateTicketsPriority(final long newDaysPassed) {
         if (this.daysUntilDue <= 2) {
             for (int ticketId : tickets) {
                 Ticket ticket = TicketService.getInstance().getTicket(ticketId);
-                if (ticket.getStatus() == TicketStatus.OPEN || ticket.getStatus() == TicketStatus.IN_PROGRESS) {
+                if (ticket.getStatus() == TicketStatus.OPEN
+                        || ticket.getStatus() == TicketStatus.IN_PROGRESS) {
                     ticket.setBusinessPriority(Priority.CRITICAL);
                 }
             }
             return;
         }
 
-        long intervals = (daysPassed + this.daysPassed) / 3;
-        this.daysPassed = (daysPassed + this.daysPassed) % 3;
+        long intervals = (newDaysPassed + this.daysPassed) / THREE;
+        this.daysPassed = (newDaysPassed + this.daysPassed) % THREE;
         for (int ticketId : tickets) {
             Ticket ticket = TicketService.getInstance().getTicket(ticketId);
-            if(ticket.getStatus() == TicketStatus.OPEN || ticket.getStatus() == TicketStatus.IN_PROGRESS)
-                for (long i = 0; i < intervals; i++)
+            if (ticket.getStatus() == TicketStatus.OPEN
+                    || ticket.getStatus() == TicketStatus.IN_PROGRESS) {
+                for (long i = 0; i < intervals; i++) {
                     ticket.setBusinessPriority(increasePriority(ticket.getBusinessPriority()));
+                }
+            }
         }
     }
 
-    private Priority increasePriority(Priority current) {
+    private Priority increasePriority(final Priority current) {
         return switch (current) {
             case LOW -> Priority.MEDIUM;
             case MEDIUM -> Priority.HIGH;
@@ -137,11 +179,17 @@ public class Milestone {
         };
     }
 
+    /**
+     * Returns a list of open tickets in the milestone.
+     * @return A list of open tickets.
+     */
     public List<Ticket> viewOpenTickets() {
-        List<Ticket> tickets = new LinkedList<>();
-        for (int ticketId : openTickets)
-            if (TicketService.getInstance().getTicket(ticketId).getStatus() == TicketStatus.OPEN)
-                tickets.add(TicketService.getInstance().getTicket(ticketId));
-        return tickets;
+        List<Ticket> openTicketList = new LinkedList<>();
+        for (int ticketId : openTickets) {
+            if (TicketService.getInstance().getTicket(ticketId).getStatus() == TicketStatus.OPEN) {
+                openTicketList.add(TicketService.getInstance().getTicket(ticketId));
+            }
+        }
+        return openTicketList;
     }
 }

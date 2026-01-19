@@ -9,34 +9,48 @@ import models.enums.Role;
 import models.tickets.Ticket;
 import models.users.User;
 import services.MapperService;
-import services.TicketService;
 import services.UserService;
 
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 
+/**
+ * Command to view tickets.
+ */
 @NoArgsConstructor
-public class ViewTicketsCommand extends BaseCommand{
-    ViewTicketsCommand(String command, String username, String timestamp) {
+public final class ViewTicketsCommand extends BaseCommand {
+    /**
+     * Constructs a new ViewTicketsCommand.
+     * @param command The command name.
+     * @param username The username of the user executing the command.
+     * @param timestamp The timestamp of the command.
+     */
+    ViewTicketsCommand(final String command, final String username, final String timestamp) {
         super(command, username, timestamp);
     }
 
+    /**
+     * Executes the command to view tickets.
+     * @return An ObjectNode containing the tickets.
+     */
     @Override
     public ObjectNode execute() {
-        ObjectMapper MAPPER = MapperService.getInstance();
-        ArrayNode tickets = MAPPER.createArrayNode();
-        ObjectNode result = MAPPER.valueToTree(this);
+        ObjectMapper mapper = MapperService.getInstance();
+        ArrayNode tickets = mapper.createArrayNode();
+        ObjectNode result = mapper.valueToTree(this);
         User user = UserService.getInstance().getUser(username);
 
         for (Ticket ticket : user.viewTickets()) {
-            tickets.add(MAPPER.convertValue(ticket, JsonNode.class));
+            tickets.add(mapper.convertValue(ticket, JsonNode.class));
         }
         result.set("tickets", tickets);
 
         return result;
     }
 
+    /**
+     * Returns the allowed roles for this command.
+     * @return A list of allowed roles.
+     */
     @Override
     public List<Role> getAllowedRoles() {
         return List.of(Role.REPORTER, Role.MANAGER, Role.DEVELOPER);

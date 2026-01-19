@@ -3,25 +3,32 @@ package commands;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.NoArgsConstructor;
-import models.milestones.Milestone;
 import models.enums.Role;
+import models.milestones.Milestone;
 import models.milestones.MilestoneFactory;
 import models.tickets.Ticket;
 import services.MilestoneService;
 import services.TicketService;
 
 import java.util.List;
-import java.util.Set;
 
+/**
+ * Command to create a new milestone.
+ */
 @NoArgsConstructor
 public class CreateMilestoneCommand extends BaseCommand {
-    JsonNode params;
+    private JsonNode params;
 
-    CreateMilestoneCommand(String command, String username, String timestamp, JsonNode specificFields) {
+    CreateMilestoneCommand(final String command, final String username, final String timestamp,
+                           final JsonNode specificFields) {
         super(command, username, timestamp);
         params = specificFields;
     }
 
+    /**
+     * Executes the command to create a milestone.
+     * @return null.
+     */
     @Override
     public ObjectNode execute() {
         Milestone milestone = MilestoneFactory.createMilestone(username, timestamp, params);
@@ -29,11 +36,19 @@ public class CreateMilestoneCommand extends BaseCommand {
         return null;
     }
 
+    /**
+     * Returns the allowed roles for this command.
+     * @return A list of allowed roles.
+     */
     @Override
     public List<Role> getAllowedRoles() {
         return List.of(Role.MANAGER);
     }
 
+    /**
+     * Validates the specific parameters for this command.
+     * @throws Exception if a ticket is already assigned to a milestone.
+     */
     @Override
     public void validateSpecific() throws Exception {
         for (JsonNode ticketNode : params.get("tickets")) {

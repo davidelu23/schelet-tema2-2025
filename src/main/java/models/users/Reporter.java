@@ -3,31 +3,39 @@ package models.users;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import models.tickets.Ticket;
 import services.TicketService;
 
+/**
+ * Represents a reporter user.
+ */
 @Getter
 @Setter
 @NoArgsConstructor
-public class Reporter extends User{
+public final class Reporter extends User {
+    /**
+     * Adds the ticket to the reporter's list of tickets if they reported it.
+     * @param ticketId The ID of the added ticket.
+     */
     @Override
-    public void onTicketAdded(int ticketId) {
-        if (TicketService.getInstance().getTicket(ticketId).getReportedBy().equals(this.getUsername()))
+    public void onTicketAdded(final int ticketId) {
+        if (TicketService.getInstance().getTicket(ticketId)
+                .getReportedBy().equals(this.getUsername())) {
             this.getTicketsIds().add(ticketId);
+        }
     }
 
     @Override
-    public void onTicketRemoved(int ticketId) {
+    public void onTicketRemoved(final int ticketId) {
         // Can be overridden if needed
     }
 
     @Override
-    public void onMilestoneAdded(String milestoneName) {
+    public void onMilestoneAdded(final String milestoneName) {
 
     }
 
     @Override
-    public void onMilestoneRemoved(String milestoneName) {
+    public void onMilestoneRemoved(final String milestoneName) {
 
     }
 }

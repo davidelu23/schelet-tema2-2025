@@ -2,9 +2,11 @@ package commands;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import models.enums.*;
+import models.enums.ExpertiseArea;
+import models.enums.Role;
+import models.enums.Seniority;
+import models.enums.TicketStatus;
 import models.milestones.Milestone;
-import models.milestones.MilestoneFactory;
 import models.tickets.Ticket;
 import models.users.Developer;
 import services.MapperService;
@@ -12,18 +14,31 @@ import services.MilestoneService;
 import services.TicketService;
 import services.UserService;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-public class AssignTicketCommand extends BaseCommand {
-    int ticketId;
+/**
+ * Command to assign a ticket to a developer.
+ */
+public final class AssignTicketCommand extends BaseCommand {
+    private final int ticketId;
 
-    AssignTicketCommand(String command, String username, String timestamp, JsonNode specificFields) {
+    /**
+     * Constructs a new AssignTicketCommand.
+     * @param command The command name.
+     * @param username The username of the user executing the command.
+     * @param timestamp The timestamp of the command.
+     * @param specificFields The specific fields for this command.
+     */
+    AssignTicketCommand(final String command, final String username, final String timestamp,
+                        final JsonNode specificFields) {
         super(command, username, timestamp);
         ticketId = specificFields.get("ticketID").asInt();
     }
 
+    /**
+     * Executes the command to assign a ticket.
+     * @return null.
+     */
     @Override
     public ObjectNode execute() {
         MilestoneService.getInstance().assignTicket(ticketId, username);
@@ -45,11 +60,19 @@ public class AssignTicketCommand extends BaseCommand {
         return null;
     }
 
+    /**
+     * Returns the allowed roles for this command.
+     * @return A list of allowed roles.
+     */
     @Override
     public List<Role> getAllowedRoles() {
         return List.of(Role.DEVELOPER);
     }
 
+    /**
+     * Validates the specific parameters for this command.
+     * @throws Exception if the validation fails.
+     */
     @Override
     public void validateSpecific() throws Exception {
         Ticket ticket = TicketService.getInstance().getTicket(ticketId);
@@ -62,19 +85,23 @@ public class AssignTicketCommand extends BaseCommand {
         if (ticketArea != null) {
             List<ExpertiseArea> expertiseAreas = getRequiredExpertiseAreas(ticketArea);
 
-            // E bine să verifici și dacă developerul are expertiză setată, pentru siguranță
-            if (developer.getExpertiseArea() != null && !expertiseAreas.contains(developer.getExpertiseArea())) {
+            if (developer.getExpertiseArea() != null
+                    && !expertiseAreas.contains(developer.getExpertiseArea())) {
                 throw new Exception("Developer " + username + " cannot assign ticket " + ticketId
-                        + " due to expertise area. Required: " + String.join(", ", expertiseAreas.stream().map(ExpertiseArea::name).toList())
+                        + " due to expertise area. Required: "
+                        + String.join(", ", expertiseAreas.stream()
+                        .map(ExpertiseArea::name).toList())
                         + "; Current: " + developer.getExpertiseArea().name() + ".");
             }
         }
 
         // 2. Check seniority level
-        List<String> requiredSeniorities = ticket.getRequiredSeniorities().stream().map(Seniority::name).toList();
+        List<String> requiredSeniorities = ticket.getRequiredSeniorities()
+                .stream().map(Seniority::name).toList();
         if (!requiredSeniorities.contains(developer.getSeniority().toString())) {
             throw new Exception("Developer " + username + " cannot assign ticket " + ticketId
-                    + " due to seniority level. Required: " + String.join(", ", requiredSeniorities)
+                    + " due to seniority level. Required: "
+                    + String.join(", ", requiredSeniorities)
                     + "; Current: " + developer.getSeniority().name() + ".");
         }
 
@@ -87,17 +114,19 @@ public class AssignTicketCommand extends BaseCommand {
         if (milestoneName != null) {
             Milestone milestone = MilestoneService.getInstance().getMilestone(milestoneName);
             if (!milestone.getAssignedDevs().contains(username)) {
-                throw new Exception("Developer " + username + " is not assigned to milestone " + milestoneName + ".");
+                throw new Exception("Developer " + username
+                        + " is not assigned to milestone " + milestoneName + ".");
             }
 
             // 5. Check milestone is not blocked
             if (milestone.getIsBlocked()) {
-                throw new Exception("Cannot assign ticket " + ticketId + " from blocked milestone " + milestoneName + ".");
+                throw new Exception("Cannot assign ticket " + ticketId
+                        + " from blocked milestone " + milestoneName + ".");
             }
         }
     }
 
-    private List<ExpertiseArea> getRequiredExpertiseAreas(ExpertiseArea ticketArea) {
+    private List<ExpertiseArea> getRequiredExpertiseAreas(final ExpertiseArea ticketArea) {
         return switch (ticketArea) {
             case FRONTEND -> List.of(ExpertiseArea.FRONTEND, ExpertiseArea.FULLSTACK);
             case BACKEND -> List.of(ExpertiseArea.BACKEND, ExpertiseArea.FULLSTACK);

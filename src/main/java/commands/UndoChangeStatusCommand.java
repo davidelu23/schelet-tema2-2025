@@ -10,14 +10,29 @@ import services.TicketService;
 
 import java.util.List;
 
-public class UndoChangeStatusCommand extends BaseCommand {
-    private int ticketId;
+/**
+ * Command to undo a status change on a ticket.
+ */
+public final class UndoChangeStatusCommand extends BaseCommand {
+    private final int ticketId;
 
-    public UndoChangeStatusCommand(String command, String username, String timestamp, JsonNode specificFields) {
+    /**
+     * Constructs a new UndoChangeStatusCommand.
+     * @param command The command name.
+     * @param username The username of the user executing the command.
+     * @param timestamp The timestamp of the command.
+     * @param specificFields The specific fields for this command.
+     */
+    public UndoChangeStatusCommand(final String command, final String username,
+                                   final String timestamp, final JsonNode specificFields) {
         super(command, username, timestamp);
         this.ticketId = specificFields.get("ticketID").asInt();
     }
 
+    /**
+     * Executes the command to undo a status change.
+     * @return null.
+     */
     @Override
     public ObjectNode execute() {
         Ticket ticket = TicketService.getInstance().getTicket(ticketId);
@@ -50,7 +65,7 @@ public class UndoChangeStatusCommand extends BaseCommand {
         return null;
     }
 
-    private TicketStatus getPreviousStatus(TicketStatus currentStatus) {
+    private TicketStatus getPreviousStatus(final TicketStatus currentStatus) {
         return switch (currentStatus) {
             case CLOSED -> TicketStatus.RESOLVED;
             case RESOLVED -> TicketStatus.IN_PROGRESS;
@@ -59,11 +74,19 @@ public class UndoChangeStatusCommand extends BaseCommand {
         };
     }
 
+    /**
+     * Returns the allowed roles for this command.
+     * @return A list of allowed roles.
+     */
     @Override
     public List<Role> getAllowedRoles() {
         return List.of(Role.DEVELOPER);
     }
 
+    /**
+     * Validates the specific parameters for this command.
+     * @throws Exception if the validation fails.
+     */
     @Override
     public void validateSpecific() throws Exception {
         Ticket ticket = TicketService.getInstance().getTicket(ticketId);
@@ -73,7 +96,8 @@ public class UndoChangeStatusCommand extends BaseCommand {
         }
 
         if (!username.equals(ticket.getAssignedTo())) {
-            throw new Exception("Ticket " + ticketId + " is not assigned to developer " + username + ".");
+            throw new Exception("Ticket " + ticketId
+                    + " is not assigned to developer " + username + ".");
         }
     }
 }

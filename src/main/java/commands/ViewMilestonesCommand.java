@@ -6,26 +6,36 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.enums.Role;
 import models.milestones.Milestone;
-import models.tickets.Ticket;
 import models.users.User;
-import services.AppService;
 import services.MapperService;
 import services.UserService;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 
-public class ViewMilestonesCommand extends BaseCommand {
-    ViewMilestonesCommand(String command, String username, String timestamp) {
+/**
+ * Command to view milestones.
+ */
+public final class ViewMilestonesCommand extends BaseCommand {
+    /**
+     * Constructs a new ViewMilestonesCommand.
+     * @param command The command name.
+     * @param username The username of the user executing the command.
+     * @param timestamp The timestamp of the command.
+     */
+    ViewMilestonesCommand(final String command, final String username, final String timestamp) {
         super(command, username, timestamp);
     }
 
+    /**
+     * Executes the command to view milestones.
+     * @return An ObjectNode containing the milestones.
+     */
     @Override
     public ObjectNode execute() {
-        ObjectMapper MAPPER = MapperService.getInstance();
-        ArrayNode milestones = MAPPER.createArrayNode();
-        ObjectNode result = MAPPER.valueToTree(this);
+        ObjectMapper mapper = MapperService.getInstance();
+        ArrayNode milestones = mapper.createArrayNode();
+        ObjectNode result = mapper.valueToTree(this);
         User user = UserService.getInstance().getUser(username);
 
         List<Milestone> milestoneList = user.viewMilestones();
@@ -33,13 +43,17 @@ public class ViewMilestonesCommand extends BaseCommand {
                 .comparing(Milestone::getDueDate)
                 .thenComparing(Milestone::getName));
         for (Milestone milestone : milestoneList) {
-            milestones.add(MAPPER.convertValue(milestone, JsonNode.class));
+            milestones.add(mapper.convertValue(milestone, JsonNode.class));
         }
         result.set("milestones", milestones);
 
         return result;
     }
 
+    /**
+     * Returns the allowed roles for this command.
+     * @return A list of allowed roles.
+     */
     @Override
     public List<Role> getAllowedRoles() {
         return List.of(Role.MANAGER, Role.DEVELOPER);
