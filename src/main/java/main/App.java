@@ -52,10 +52,8 @@ public class App {
         MilestoneService.reset();
 
         // initialize services
-        ObjectMapper MAPPER = MapperService.getInstance();
         UserService users = UserService.getInstance();
         AppService app = AppService.getInstance();
-        TicketService tickets = TicketService.getInstance();
 
         try {
             // load users
@@ -66,19 +64,21 @@ public class App {
 
             // execute commands
             CommandExecutor executor = new CommandExecutor();
-            BaseCommand command = app.getNextCommand();
+            BaseCommand command;
 
-            while (command != null) {
-                // execute command
-                ObjectNode output = executor.execute(command);
-
+            do {
                 // update app state
                 app.update();
 
-                if (output != null)
-                    outputs.add(output);
+                // execute command
                 command = app.getNextCommand();
-            }
+                if (command != null) {
+                    ObjectNode output = executor.execute(command);
+
+                    if (output != null)
+                        outputs.add(output);
+                }
+            } while (command != null);
         }
         catch (IOException e) {
             System.out.println("error reading input file: " + e.getMessage());

@@ -8,6 +8,7 @@ import models.enums.Role;
 import models.milestones.Milestone;
 import models.tickets.Ticket;
 import models.users.User;
+import services.AppService;
 import services.MapperService;
 import services.UserService;
 
@@ -29,7 +30,7 @@ public class ViewMilestonesCommand extends BaseCommand {
 
         List<Milestone> milestoneList = user.viewMilestones();
         milestoneList.sort(Comparator
-                .comparing(Milestone::getCreatedAt).reversed()
+                .comparing(Milestone::getDueDate)
                 .thenComparing(Milestone::getName));
         for (Milestone milestone : milestoneList) {
             milestones.add(MAPPER.convertValue(milestone, JsonNode.class));

@@ -2,8 +2,6 @@ package commands;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import java.time.LocalDate;
-
 public class CommandFactory {
     public static BaseCommand createCommand(JsonNode commandNode) {
         String commandName = commandNode.get("command").asText();
@@ -16,6 +14,9 @@ public class CommandFactory {
             case "lostInvestors" -> new LostInvestorsCommand(commandName, username, timestamp);
             case "createMilestone" -> new CreateMilestoneCommand(commandName, username, timestamp, commandNode);
             case "viewMilestones" -> new ViewMilestonesCommand(commandName, username, timestamp);
+            case "assignTicket" -> new AssignTicketCommand(commandName, username, timestamp, commandNode);
+            case "undoAssignTicket" -> new UndoAssignTicketCommand(commandName, username, timestamp, commandNode);
+            case "viewAssignedTickets" -> new ViewAssignedTicketsCommand(commandName, username, timestamp);
             default -> null;
         };
     }

@@ -78,7 +78,7 @@ public class AppService {
             setCurrentPhase(Phase.DevelopmentPhase);
 
         // update milestones time
-        MilestoneService.getInstance().updateTime(timePassed);
         currentDate = timestamp;
+        MilestoneService.getInstance().updateTime(timePassed);
     }
 }

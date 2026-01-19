@@ -46,7 +46,7 @@ public class TicketService {
 
     public void notifyTicketAdded(int ticketId) {
         for (TicketObserver observer : observers) {
-            observer.onObjectAdded(ticketId);
+            observer.onTicketAdded(ticketId);
         }
     }
 }

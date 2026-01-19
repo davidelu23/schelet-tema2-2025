@@ -13,9 +13,7 @@ import observers.TicketObserver;
 import services.MilestoneService;
 import services.TicketService;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 @Getter
 @NoArgsConstructor
@@ -35,11 +33,18 @@ public abstract class User implements TicketObserver, MilestoneObserver {
     private String email;
     private Role role;
     @JsonIgnore
-    private final List<Integer> ticketsIds = new ArrayList<>();
+    private final Set<Integer> ticketsIds = new LinkedHashSet<>();
     @JsonIgnore
-    private final List<String> milestonesNames = new ArrayList<>();
+    private final Set<String> milestonesNames = new LinkedHashSet<>();
 
     public List<Ticket> viewTickets() {
+        List<Ticket> tickets = new LinkedList<>();
+        for (int ticketId : ticketsIds)
+            tickets.add(TicketService.getInstance().getTicket(ticketId));
+        return tickets;
+    }
+
+    public List<Ticket> viewAllTickets() {
         List<Ticket> tickets = new LinkedList<>();
         for (int ticketId : ticketsIds)
             tickets.add(TicketService.getInstance().getTicket(ticketId));

@@ -11,7 +11,7 @@ import services.TicketService;
 @NoArgsConstructor
 public class Reporter extends User{
     @Override
-    public void onObjectAdded(int ticketId) {
+    public void onTicketAdded(int ticketId) {
         if (TicketService.getInstance().getTicket(ticketId).getReportedBy().equals(this.getUsername()))
             this.getTicketsIds().add(ticketId);
     }

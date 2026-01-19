@@ -57,10 +57,10 @@ public abstract class MilestoneFactory {
         milestone.setOpenTickets(List.copyOf(milestone.getTickets()));
         milestone.setClosedTickets(new ArrayList<>());
         milestone.setCompletionPercentage(0.0);
-        milestone.setDaysUntilDue(ChronoUnit.DAYS.between(LocalDate.parse(timestamp), LocalDate.parse(milestone.getDueDate())) + 1);
         milestone.setRepartition(new ArrayList<>());
         for (String dev : milestone.getAssignedDevs())
             milestone.getRepartition().add(new Repartition(dev));
+        milestone.setDaysPassed(0);
 
         return milestone;
     }

@@ -16,7 +16,7 @@ public class Manager extends User {
     private List<String> subordinates = new ArrayList<>();
 
     @Override
-    public void onObjectAdded(int ticketId) {
+    public void onTicketAdded(int ticketId) {
         this.getTicketsIds().add(ticketId);
     }
 

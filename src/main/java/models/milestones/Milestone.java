@@ -7,9 +7,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import models.enums.MilestoneStatus;
 import models.enums.Priority;
+import models.enums.TicketStatus;
 import models.tickets.Ticket;
+import services.AppService;
 import services.TicketService;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.LinkedList;
 import java.util.List;
 
 @Getter
@@ -26,12 +31,14 @@ public class Milestone {
     private MilestoneStatus status;
     @JsonIgnore
     private boolean isBlocked;
+    @JsonIgnore
     private long daysUntilDue;
-    private long overdueBy;
     private List<Integer> openTickets;
     private List<Integer> closedTickets;
     private double completionPercentage;
     private List<Repartition> repartition;
+    @JsonIgnore
+    private long daysPassed;
 
     @JsonProperty("isBlocked")
     public boolean getIsBlocked() {
@@ -43,26 +50,48 @@ public class Milestone {
     }
 
     public void updateTime(long daysPassed) {
-        updateDaysUntilDue(daysPassed);
-        updateTicketsPriority(daysPassed);
+        updateDaysUntilDue();
+        if (!this.isBlocked)
+            updateTicketsPriority(daysPassed);
     }
 
-    private void updateDaysUntilDue(long daysPassed) {
-        if (this.daysUntilDue > 0)
-            this.daysUntilDue = this.daysUntilDue - daysPassed;
-        else if (this.daysUntilDue == 0)
-            overdueBy += daysPassed;
-        if (this.daysUntilDue < 0)
-            this.daysUntilDue = 0;
+    @JsonProperty("daysUntilDue")
+    public long getDaysUntilDue() {
+        return Math.max(0, daysUntilDue);
+    }
+
+    @JsonProperty("overdueBy")
+    public long getOverdueBy() {
+        return Math.abs(Math.min(0, daysUntilDue));
+    }
+
+    private void updateDaysUntilDue() {
+        LocalDate currentDate = AppService.getInstance().getCurrentDate();
+        daysUntilDue = ChronoUnit.DAYS.between(currentDate, LocalDate.parse(dueDate));
+        if (daysUntilDue >= 0)
+            daysUntilDue++;
+        else
+            daysUntilDue--;
     }
 
     private void updateTicketsPriority(long daysPassed) {
-        // might need fixing later
-        long intervals = daysPassed / 3;
+        if (this.daysUntilDue <= 2) {
+            for (int ticketId : tickets) {
+                Ticket ticket = TicketService.getInstance().getTicket(ticketId);
+                if (ticket.getStatus() == TicketStatus.OPEN || ticket.getStatus() == TicketStatus.IN_PROGRESS) {
+                    ticket.setBusinessPriority(Priority.CRITICAL);
+                }
+            }
+            return;
+        }
+
+        long intervals = (daysPassed + this.daysPassed) / 3;
+        this.daysPassed = (daysPassed + this.daysPassed) % 3;
         for (int ticketId : tickets) {
             Ticket ticket = TicketService.getInstance().getTicket(ticketId);
-            for (long i = 0; i < intervals; i++)
-                ticket.setBusinessPriority(increasePriority(ticket.getBusinessPriority()));
+            if(ticket.getStatus() == TicketStatus.OPEN || ticket.getStatus() == TicketStatus.IN_PROGRESS)
+                for (long i = 0; i < intervals; i++)
+                    ticket.setBusinessPriority(increasePriority(ticket.getBusinessPriority()));
         }
     }
 
@@ -70,8 +99,15 @@ public class Milestone {
         return switch (current) {
             case LOW -> Priority.MEDIUM;
             case MEDIUM -> Priority.HIGH;
-            case HIGH -> Priority.CRITICAL;
-            case CRITICAL -> Priority.CRITICAL;  // stays CRITICAL
+            case HIGH, CRITICAL -> Priority.CRITICAL;
         };
+    }
+
+    public List<Ticket> viewOpenTickets() {
+        List<Ticket> tickets = new LinkedList<>();
+        for (int ticketId : openTickets)
+            if (TicketService.getInstance().getTicket(ticketId).getStatus() == TicketStatus.OPEN)
+                tickets.add(TicketService.getInstance().getTicket(ticketId));
+        return tickets;
     }
 }
