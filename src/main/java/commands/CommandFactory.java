@@ -47,6 +47,12 @@ public final class CommandFactory {
                     new ViewTicketHistoryCommand(commandName, username, timestamp);
             case "generateCustomerImpactReport" ->
                     new GenerateCustomerImpactReportCommand(commandName, username, timestamp);
+            case "generateTicketRiskReport" ->
+                    new GenerateTicketRiskReportCommand(commandName, username, timestamp);
+            case "generatePerformanceReportCommand" ->
+                    new GeneratePerformanceReportCommand(commandName, username, timestamp);
+            case "generateResolutionEfficiencyReport" ->
+                    new GenerateResolutionEfficiencyReportCommand(commandName, username, timestamp);
             default -> null;
         };
     }

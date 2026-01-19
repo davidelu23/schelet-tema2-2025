@@ -1,6 +1,7 @@
 package models.tickets;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import models.enums.Frequency;
@@ -20,14 +21,19 @@ public final class Bug extends Ticket {
     private String expectedBehavior;
     @JsonIgnore
     private String actualBehavior;
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Frequency frequency;
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Severity severity;
     @JsonIgnore
     private String environment;
     @JsonIgnore
     private Integer errorCode;
+
+    private static final int MAX_IMPACT_SCORE = 48;
+    private static final int MAX_RISK_SCORE = 12;
+    private static final int MAX_EFFICIENCY_SCORE = 70;
+    private static final int EFFICIENCY_MULTIPLIER = 10;
 
     /**
      * Returns the required seniorities for this bug.
@@ -49,9 +55,28 @@ public final class Bug extends Ticket {
         int freq = this.getFrequency().getValue();
         int prio = this.getBusinessPriority().getValue();
         int sev  = this.getSeverity().getValue();
-
         double rawImpact = freq * prio * sev;
 
-        return (rawImpact * 100.0) / 48.0;
+        return calculateNormalizedScore(rawImpact, MAX_IMPACT_SCORE);
+    }
+
+    @Override
+    public double calculateRisk() {
+        int freq = this.getFrequency().getValue();
+        int sev  = this.getSeverity().getValue();
+        double rawRisk = freq * sev;
+
+        return calculateNormalizedScore(rawRisk, MAX_RISK_SCORE);
+    }
+
+    @Override
+    public double calculateResolutionEfficiency() {
+        long days = getDaysToResolve();
+        int freq = this.getFrequency().getValue();
+        int sev = this.getSeverity().getValue();
+
+        double rawScore = (double) ((freq + sev) * EFFICIENCY_MULTIPLIER) / days;
+
+        return calculateNormalizedScore(rawScore, MAX_EFFICIENCY_SCORE);
     }
 }

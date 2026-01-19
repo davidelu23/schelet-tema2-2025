@@ -1,28 +1,28 @@
 package main;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 import commands.BaseCommand;
 import commands.CommandExecutor;
-import models.tickets.Ticket;
 import models.tickets.TicketFactory;
-import services.*;
+import services.AppService;
+import services.MapperService;
+import services.MilestoneService;
+import services.TicketService;
+import services.UserService;
 
 /**
  * main.App represents the main application logic that processes input commands,
  * generates outputs, and writes them to a file
  */
-public class App {
+public final class App {
     private App() {
     }
 
@@ -75,12 +75,12 @@ public class App {
                 if (command != null) {
                     ObjectNode output = executor.execute(command);
 
-                    if (output != null)
+                    if (output != null) {
                         outputs.add(output);
+                    }
                 }
             } while (command != null);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             System.out.println("error reading input file: " + e.getMessage());
         }
 

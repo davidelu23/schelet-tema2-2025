@@ -57,7 +57,10 @@ public final class ChangeStatusCommand extends BaseCommand {
     private TicketStatus getNextStatus(final TicketStatus currentStatus, final Ticket ticket) {
         return switch (currentStatus) {
             case OPEN -> TicketStatus.IN_PROGRESS;
-            case IN_PROGRESS -> TicketStatus.RESOLVED;
+            case IN_PROGRESS -> {
+                ticket.setResolvedAt(timestamp);
+                yield TicketStatus.RESOLVED;
+            }
             case RESOLVED -> {
                 ticket.setSolvedAt(timestamp);
                 Milestone milestone = MilestoneService.getInstance()

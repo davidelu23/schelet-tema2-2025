@@ -1,6 +1,6 @@
 package models.tickets;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import models.enums.BusinessValue;
@@ -16,10 +16,14 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 public final class FeatureRequest extends Ticket {
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private BusinessValue businessValue;
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private CustomerDemand customerDemand;
+
+    private static final int MAX_IMPACT_SCORE = 100;
+    private static final int MAX_RISK_SCORE = 20;
+    private static final int MAX_EFFICIENCY_SCORE = 20;
 
     /**
      * Returns the required seniorities for this feature request.
@@ -35,12 +39,30 @@ public final class FeatureRequest extends Ticket {
 
     @Override
     public double calculateCustomerImpact() {
+        int bv = getBusinessValue().getValue();
+        int demand = getCustomerDemand().getValue();
+        double rawImpact = bv * demand;
+
+        return calculateNormalizedScore(rawImpact, MAX_IMPACT_SCORE);
+    }
+
+    @Override
+    public double calculateRisk() {
+        int bv = getBusinessValue().getValue();
+        int demand = getCustomerDemand().getValue();
+        double rawRisk = bv + demand;
+
+        return calculateNormalizedScore(rawRisk, MAX_RISK_SCORE);
+    }
+
+    @Override
+    public double calculateResolutionEfficiency() {
+        long days = getDaysToResolve();
         int bv = this.getBusinessValue().getValue();
         int demand = this.getCustomerDemand().getValue();
 
-        double rawImpact = bv * demand;
-        rawImpact = (rawImpact / 100.0) * 100.0;
+        double rawScore = (double) (bv + demand) / days;
 
-        return rawImpact;
+        return calculateNormalizedScore(rawScore, MAX_EFFICIENCY_SCORE);
     }
 }

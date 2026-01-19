@@ -56,6 +56,7 @@ public final class AssignTicketCommand extends BaseCommand {
         history.put("timestamp", timestamp);
         history.put("action", "STATUS_CHANGED");
         TicketService.getInstance().getTicket(ticketId).getHistory().add(history);
+        TicketService.getInstance().getTicket(ticketId).setStatus(TicketStatus.IN_PROGRESS);
 
         return null;
     }

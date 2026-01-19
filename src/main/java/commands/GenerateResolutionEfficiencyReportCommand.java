@@ -2,7 +2,6 @@ package commands;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import models.enums.Risk;
 import models.enums.Role;
 import models.enums.TicketStatus;
 import models.tickets.Ticket;
@@ -15,20 +14,20 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Command to generate a report on ticket risk.
+ * Command to generate a report on ticket resolution efficiency.
  */
-public final class GenerateTicketRiskReportCommand extends BaseCommand {
+public final class GenerateResolutionEfficiencyReportCommand extends BaseCommand {
 
     private static final double ONE_HUNDRED = 100.0;
 
     /**
-     * Constructs a new GenerateTicketRiskReportCommand.
+     * Constructs a new GenerateResolutionEfficiencyReportCommand.
      * @param command The command name.
      * @param username The username of the user executing the command.
      * @param timestamp The timestamp of the command.
      */
-    public GenerateTicketRiskReportCommand(final String command, final String username,
-                                           final String timestamp) {
+    public GenerateResolutionEfficiencyReportCommand(final String command, final String username,
+                                                     final String timestamp) {
         super(command, username, timestamp);
     }
 
@@ -51,15 +50,15 @@ public final class GenerateTicketRiskReportCommand extends BaseCommand {
         ObjectMapper mapper = MapperService.getInstance();
         ObjectNode result = mapper.createObjectNode();
 
-        result.put("command", "generateTicketRiskReport");
+        result.put("command", "generateResolutionEfficiencyReport");
         result.put("username", username);
         result.put("timestamp", timestamp);
 
         ObjectNode report = mapper.createObjectNode();
         List<Ticket> tickets = new ArrayList<>();
         for (Ticket ticket : TicketService.getInstance().getAllTickets()) {
-            if (ticket.getStatus() == TicketStatus.OPEN
-                    || ticket.getStatus() == TicketStatus.IN_PROGRESS) {
+            if (ticket.getStatus() == TicketStatus.CLOSED
+                    || ticket.getStatus() == TicketStatus.RESOLVED) {
                 tickets.add(ticket);
             }
         }
@@ -76,12 +75,11 @@ public final class GenerateTicketRiskReportCommand extends BaseCommand {
         priorityCounts.put("HIGH", 0);
         priorityCounts.put("CRITICAL", 0);
 
-        Map<String, Double> totalRiskByType = new HashMap<>();
-        Map<String, Integer> countByType = new HashMap<>();
-
+        Map<String, Double> totalEfficiency = new HashMap<>();
+        Map<String, Integer> efficiencyCount = new HashMap<>();
         for (String key : typeCounts.keySet()) {
-            totalRiskByType.put(key, 0.0);
-            countByType.put(key, 0);
+            totalEfficiency.put(key, 0.0);
+            efficiencyCount.put(key, 0);
         }
 
         for (Ticket ticket : tickets) {
@@ -97,12 +95,9 @@ public final class GenerateTicketRiskReportCommand extends BaseCommand {
                 priorityCounts.put(priority, priorityCounts.get(priority) + 1);
             }
 
-            double score = ticket.calculateRisk();
-
-            if (totalRiskByType.containsKey(type)) {
-                totalRiskByType.put(type, totalRiskByType.get(type) + score);
-                countByType.put(type, countByType.get(type) + 1);
-            }
+            double score = ticket.calculateResolutionEfficiency();
+            totalEfficiency.put(type, totalEfficiency.get(type) + score);
+            efficiencyCount.put(type, efficiencyCount.get(type) + 1);
         }
 
         ObjectNode typeNode = mapper.createObjectNode();
@@ -118,17 +113,16 @@ public final class GenerateTicketRiskReportCommand extends BaseCommand {
         priorityNode.put("CRITICAL", priorityCounts.get("CRITICAL"));
         report.set("ticketsByPriority", priorityNode);
 
-        ObjectNode impactNode = mapper.createObjectNode();
-        impactNode.put("BUG", Risk.fromScore(
-                calculateAverage(totalRiskByType.get("BUG"),
-                        countByType.get("BUG"))).toString());
-        impactNode.put("FEATURE_REQUEST", Risk.fromScore(
-                calculateAverage(totalRiskByType.get("FEATURE_REQUEST"),
-                        countByType.get("FEATURE_REQUEST"))).toString());
-        impactNode.put("UI_FEEDBACK", Risk.fromScore(
-                calculateAverage(totalRiskByType.get("UI_FEEDBACK"),
-                        countByType.get("UI_FEEDBACK"))).toString());
-        report.set("riskByType", impactNode);
+        ObjectNode efficiencyNode = mapper.createObjectNode();
+        efficiencyNode.put("BUG",
+                calculateAverage(totalEfficiency.get("BUG"), efficiencyCount.get("BUG")));
+        efficiencyNode.put("FEATURE_REQUEST",
+                calculateAverage(totalEfficiency.get("FEATURE_REQUEST"),
+                        efficiencyCount.get("FEATURE_REQUEST")));
+        efficiencyNode.put("UI_FEEDBACK",
+                calculateAverage(totalEfficiency.get("UI_FEEDBACK"),
+                        efficiencyCount.get("UI_FEEDBACK")));
+        report.set("efficiencyByType", efficiencyNode);
 
         result.set("report", report);
         return result;
